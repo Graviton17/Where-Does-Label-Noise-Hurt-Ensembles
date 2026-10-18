@@ -1,0 +1,7 @@
+model,seconds_per_fit
+Tree,0.0278
+Bagging,2.3374
+RF,0.1524
+AdaBoost,0.4613
+GB,0.7466
+XGB,2.2282
