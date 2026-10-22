@@ -1,0 +1,16 @@
+dataset,openml_id,rows,raw_features,features_after_encoding,categorical_features,missing_values,positive_class (label 1),positive_share,train_rows,test_rows
+kc2,1063,522,21,21,0,0,yes,0.205,365,157
+wdbc,1510,569,30,30,0,0,2,0.373,398,171
+ilpd,1480,583,10,11,1,0,2,0.286,408,175
+blood-transfusion,1464,748,4,4,0,0,2,0.238,523,225
+diabetes,37,768,8,8,0,0,tested_positive,0.349,537,231
+tic-tac-toe,50,958,9,27,9,0,negative,0.347,670,288
+credit-g,31,1000,20,61,13,0,bad,0.3,700,300
+qsar-biodeg,1494,1055,41,41,0,0,2,0.337,738,317
+banknote-authentication,1462,1372,4,4,0,0,2,0.445,960,412
+kc1,1067,2109,21,21,0,0,True,0.155,1476,633
+kr-vs-kp,3,3196,36,73,36,0,nowin,0.478,2237,959
+spambase,44,4601,57,57,0,0,1,0.394,3220,1381
+phoneme,1489,5404,5,5,0,0,2,0.293,3782,1622
+PhishingWebsites,4534,11055,30,68,30,0,-1,0.443,7738,3317
+electricity,151,45312,8,14,1,0,UP,0.425,31718,13594
