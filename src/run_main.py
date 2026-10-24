@@ -32,16 +32,17 @@ RATES = [0.05, 0.10, 0.20, 0.30]
 R = 51
 
 
-def conditions():
-    """The 13 noise conditions: clean + 3 noise types x 4 rates."""
+def conditions(rates=RATES):
+    """Clean + 3 noise types x the given rates (13 conditions for Phase 5)."""
     yield "none", 0.0
     for noise_type in NOISE_TYPES:
-        for rho in RATES:
+        for rho in rates:
             yield noise_type, rho
 
 
-def run_dataset(name, seed, log):
-    out_csv = OUT_DIR / f"{name}.csv"
+def run_dataset(name, seed, log, models=MODEL_NAMES, rates=RATES,
+                out_dir=OUT_DIR, pred_dir=PRED_DIR):
+    out_csv = out_dir / f"{name}.csv"
     done = set()
     if out_csv.exists():
         prev = pd.read_csv(out_csv)
@@ -49,10 +50,11 @@ def run_dataset(name, seed, log):
 
     X_tr, y_tr, X_te, y_te = load_dataset(name, DATA_DIR)
     p_ref = reference_probs(X_tr, y_tr, seed=seed)
-    (PRED_DIR / name).mkdir(parents=True, exist_ok=True)
+    if pred_dir is not None:
+        (pred_dir / name).mkdir(parents=True, exist_ok=True)
 
-    for model in MODEL_NAMES:
-        for noise_type, rho in conditions():
+    for model in models:
+        for noise_type, rho in conditions(rates):
             if (model, noise_type, round(rho, 4)) in done:
                 continue
             t = time.perf_counter()
@@ -65,7 +67,8 @@ def run_dataset(name, seed, log):
                    **decompose(P, y_te), **stats,
                    "seconds": round(time.perf_counter() - t, 2),
                    "finished_at": datetime.now().isoformat(timespec="seconds")}
-            np.savez_compressed(PRED_DIR / name / f"{model}__{noise_type}__{rho:.2f}.npz", P=P)
+            if pred_dir is not None:
+                np.savez_compressed(pred_dir / name / f"{model}__{noise_type}__{rho:.2f}.npz", P=P)
             # append immediately, so a crash loses at most one condition
             pd.DataFrame([row]).to_csv(out_csv, mode="a", header=not out_csv.exists(), index=False)
             log(f"{name:24s} {model:8s} {noise_type:9s} {rho:.2f}  error {row['error']:.4f}  "

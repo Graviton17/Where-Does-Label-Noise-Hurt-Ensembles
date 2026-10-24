@@ -1,0 +1,10 @@
+noise_type,family,10 %,20 %,30 %
+boundary,parallel,83.0,57.0,37.0
+boundary,sequential,75.0,52.0,36.0
+boundary,single,100.0,70.0,50.0
+pair_flip,parallel,113.0,96.0,91.0
+pair_flip,sequential,58.0,45.0,44.0
+pair_flip,single,102.0,103.0,95.0
+symmetric,parallel,131.0,117.0,109.0
+symmetric,sequential,1133.0,224.0,148.0
+symmetric,single,103.0,103.0,100.0

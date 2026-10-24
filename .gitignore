@@ -18,3 +18,16 @@ __pycache__/
 .DS_Store
 Thumbs.db
 *~
+
+# LaTeX build files
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.out
+paper/*.synctex.gz
+paper/*.log
+paper/*.xdv
+# Built PDF inside paper/ (the final copy is kept in the project root)
+paper/main.pdf

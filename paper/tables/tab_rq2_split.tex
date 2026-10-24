@@ -1,0 +1,27 @@
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Model & $\Delta$err & $\Delta$bias & $\Delta$var & Var.\ share \\
+\midrule
+\multicolumn{5}{@{}l}{\emph{Symmetric noise}} \\
+Tree & 10.9 & $-$0.1 & 11.0 & 101\% \\
+Bagging & 5.2 & $-$0.3 & 5.4 & 105\% \\
+RF & 4.7 & 0.1 & 4.6 & 99\% \\
+AdaBoost & 2.3 & 0.7 & 1.6 & 71\% \\
+GB & 3.6 & 0.1 & 3.5 & 98\% \\
+XGB & 3.8 & 0.2 & 3.6 & 96\% \\
+\multicolumn{5}{@{}l}{\emph{One-sided noise}} \\
+Tree & 4.2 & 0.2 & 3.9 & 94\% \\
+Bagging & 1.8 & 0.2 & 1.6 & 89\% \\
+RF & 2.4 & 1.5 & 0.9 & 36\% \\
+AdaBoost & 2.9 & 2.6 & 0.2 & 7\% \\
+GB & 2.1 & 1.8 & 0.3 & 17\% \\
+XGB & 1.9 & 1.2 & 0.8 & 40\% \\
+\multicolumn{5}{@{}l}{\emph{Boundary noise}} \\
+Tree & 8.6 & 3.9 & 4.7 & 54\% \\
+Bagging & 6.5 & 3.3 & 3.2 & 49\% \\
+RF & 6.1 & 3.4 & 2.7 & 44\% \\
+AdaBoost & 2.5 & 1.6 & 0.9 & 37\% \\
+GB & 4.3 & 2.6 & 1.7 & 40\% \\
+XGB & 4.9 & 3.0 & 1.9 & 39\% \\
+\bottomrule
+\end{tabular}

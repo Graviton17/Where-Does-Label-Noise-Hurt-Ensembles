@@ -1,0 +1,19 @@
+noise_type,model,Δ error (pp),Δ bias (pp),Δ net var (pp),variance share %
+symmetric,Tree,10.9,-0.1,11.0,100.8
+symmetric,Bagging,5.2,-0.3,5.4,105.4
+symmetric,RF,4.7,0.1,4.6,98.6
+symmetric,AdaBoost,2.3,0.7,1.6,71.3
+symmetric,GB,3.6,0.1,3.5,97.6
+symmetric,XGB,3.8,0.2,3.6,95.6
+one_sided,Tree,4.2,0.2,3.9,94.2
+one_sided,Bagging,1.8,0.2,1.6,88.5
+one_sided,RF,2.4,1.5,0.9,36.2
+one_sided,AdaBoost,2.9,2.6,0.2,7.4
+one_sided,GB,2.1,1.8,0.3,16.5
+one_sided,XGB,1.9,1.2,0.8,39.9
+boundary,Tree,8.6,3.9,4.7,54.4
+boundary,Bagging,6.5,3.3,3.2,49.0
+boundary,RF,6.1,3.4,2.7,44.1
+boundary,AdaBoost,2.5,1.6,0.9,36.7
+boundary,GB,4.3,2.6,1.7,39.9
+boundary,XGB,4.9,3.0,1.9,38.7

@@ -24,8 +24,17 @@ from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
 
 MODEL_NAMES = ["Tree", "Bagging", "RF", "AdaBoost", "GB", "XGB"]
+# Phase 6.2 (RQ4): regularised versions of four base models
+REG_MODELS = {"GB_reg": "GB", "XGB_reg": "XGB", "AdaBoost_reg": "AdaBoost", "Bagging_small": "Bagging"}
+# Phase 6.3: capacity control (tree depth matched across families)
+CAPACITY_MODELS = {"Bagging_d3": "Bagging", "RF_d3": "RF", "AdaBoost_d3": "AdaBoost",
+                   "XGB_d3": "XGB", "GB_d8": "GB", "XGB_d8": "XGB"}
+TREE_DEPTH = {"Tree": None, "Bagging": None, "RF": None, "AdaBoost": 1, "GB": 3, "XGB": 4,
+              "Bagging_d3": 3, "RF_d3": 3, "AdaBoost_d3": 3, "XGB_d3": 3, "GB_d8": 8, "XGB_d8": 8,
+              "GB_reg": 3, "XGB_reg": 4, "AdaBoost_reg": 1, "Bagging_small": None}
 MODEL_FAMILY = {"Tree": "single", "Bagging": "parallel", "RF": "parallel",
                 "AdaBoost": "sequential", "GB": "sequential", "XGB": "sequential"}
+MODEL_FAMILY.update({v: MODEL_FAMILY[b] for v, b in {**REG_MODELS, **CAPACITY_MODELS}.items()})
 NOISE_TYPES = ["symmetric", "one_sided", "boundary"]
 
 
@@ -55,10 +64,66 @@ def make_model(name, seed):
         return GradientBoostingClassifier(n_estimators=100, learning_rate=0.1,
                                           max_depth=3, random_state=seed)
     if name == "XGB":
-        return XGBClassifier(n_estimators=100, max_depth=4, learning_rate=0.1,
-                             tree_method="hist", n_jobs=1, random_state=seed,
-                             eval_metric="logloss")
+        return _xgb(max_depth=4, seed=seed)
+
+    # ---- Phase 6.2: regularised versions (RQ4)
+    if name == "GB_reg":
+        return GradientBoostingClassifier(n_estimators=200, learning_rate=0.05, max_depth=3,
+                                          subsample=0.8, n_iter_no_change=10,
+                                          validation_fraction=0.1, random_state=seed)
+    if name == "XGB_reg":
+        return EarlyStoppingXGB(seed=seed)
+    if name == "AdaBoost_reg":
+        return AdaBoostClassifier(n_estimators=100, learning_rate=0.5, random_state=seed)
+    if name == "Bagging_small":
+        return BaggingClassifier(DecisionTreeClassifier(), n_estimators=100, max_samples=0.2,
+                                 n_jobs=1, random_state=seed)
+
+    # ---- Phase 6.3: capacity control (matched tree depth)
+    if name == "Bagging_d3":
+        return BaggingClassifier(DecisionTreeClassifier(max_depth=3), n_estimators=100,
+                                 n_jobs=1, random_state=seed)
+    if name == "RF_d3":
+        return RandomForestClassifier(n_estimators=100, max_depth=3, n_jobs=1, random_state=seed)
+    if name == "AdaBoost_d3":
+        return AdaBoostClassifier(DecisionTreeClassifier(max_depth=3), n_estimators=100,
+                                  random_state=seed)
+    if name == "XGB_d3":
+        return _xgb(max_depth=3, seed=seed)
+    if name == "GB_d8":
+        return GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=8,
+                                          random_state=seed)
+    if name == "XGB_d8":
+        return _xgb(max_depth=8, seed=seed)
     raise ValueError(f"unknown model {name!r}")
+
+
+def _xgb(max_depth, seed, **kw):
+    params = dict(n_estimators=100, max_depth=max_depth, learning_rate=0.1, tree_method="hist",
+                  n_jobs=1, random_state=seed, eval_metric="logloss")
+    params.update(kw)
+    return XGBClassifier(**params)
+
+
+class EarlyStoppingXGB:
+    """XGBoost with early stopping on a 10 % validation split taken from the
+    (noisy) training data, as a practitioner would do: they cannot know which
+    labels are wrong, so the validation labels are noisy too."""
+
+    def __init__(self, seed, val_fraction=0.1, patience=10):
+        self.seed, self.val_fraction, self.patience = seed, val_fraction, patience
+
+    def fit(self, X, y):
+        from sklearn.model_selection import train_test_split
+        X_fit, X_val, y_fit, y_val = train_test_split(
+            X, y, test_size=self.val_fraction, stratify=y, random_state=self.seed)
+        self.model_ = _xgb(max_depth=4, seed=self.seed, n_estimators=300, learning_rate=0.05,
+                           subsample=0.8, early_stopping_rounds=self.patience)
+        self.model_.fit(X_fit, y_fit, eval_set=[(X_val, y_val)], verbose=False)
+        return self
+
+    def predict(self, X):
+        return self.model_.predict(X)
 
 
 def reference_probs(X_train, y_train, seed=0):
@@ -152,6 +217,44 @@ def run_condition(X_tr, y_tr, X_te, model_name, noise_type, rho,
     P = np.vstack([o[0] for o in out])
     stats = {k: float(np.mean([o[1][k] for o in out])) for k in out[0][1]}
     return P, stats
+
+
+# ---------------------------------------------------------------- RQ3: sources of variance
+DESIGNS = ["model_only", "noise_only", "sampling_only"]
+
+
+def _one_round_design(r, design, X_tr, y_tr, X_te, model_name, noise_type, rho, seed, p_ref):
+    """One round of an RQ3 design. Each design re-draws only some sources of
+    randomness; the others are held fixed across all R rounds:
+        model_only     fixed sample (whole pool), fixed noise mask, new model seed
+        noise_only     fixed sample (whole pool), NEW noise mask,   new model seed
+        sampling_only  NEW bootstrap sample,      fixed noise mask, new model seed
+    The fixed noise mask is drawn once on the whole training pool (round-independent)."""
+    n = len(y_tr)
+    fixed_rng = np.random.default_rng([seed, 999_999, 1])            # same for every round
+    y_fixed_noisy = inject_noise(noise_type, y_tr, rho, fixed_rng, p_ref)
+    if design == "model_only":
+        idx, y_fit = np.arange(n), y_fixed_noisy
+    elif design == "noise_only":
+        idx = np.arange(n)
+        y_fit = inject_noise(noise_type, y_tr, rho, np.random.default_rng([seed, r, 1]), p_ref)
+    elif design == "sampling_only":
+        idx = np.random.default_rng([seed, r, 0]).integers(0, n, n)
+        y_fit = y_fixed_noisy[idx]
+    else:
+        raise ValueError(f"unknown design {design!r}")
+    model = make_model(model_name, seed=r)
+    model.fit(X_tr[idx], y_fit)
+    return model.predict(X_te).astype(np.int8), float(np.mean(y_fit != y_tr[idx]))
+
+
+def run_design(X_tr, y_tr, X_te, design, model_name, noise_type, rho,
+               R=51, seed=42, p_ref=None, n_jobs=-1):
+    """Like run_condition, but only the sources of randomness named by `design` vary."""
+    out = Parallel(n_jobs=n_jobs)(
+        delayed(_one_round_design)(r, design, X_tr, y_tr, X_te, model_name, noise_type, rho, seed, p_ref)
+        for r in range(R))
+    return np.vstack([o[0] for o in out]), {"flip_rate": float(np.mean([o[1] for o in out]))}
 
 
 # ---------------------------------------------------------------- decomposition

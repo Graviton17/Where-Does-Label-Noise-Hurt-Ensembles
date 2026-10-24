@@ -1,0 +1,16 @@
+from,to,noise_type,change in damage (pp),p (Wilcoxon)
+Bagging (depth full),Bagging_d3 (depth 3),symmetric,-4.971006139242473,6.103515625e-05
+Bagging (depth full),Bagging_d3 (depth 3),one_sided,-1.1944222750032196,0.041259765625
+Bagging (depth full),Bagging_d3 (depth 3),boundary,-5.213255520198605,6.103515625e-05
+RF (depth full),RF_d3 (depth 3),symmetric,-4.2941093006112725,6.103515625e-05
+RF (depth full),RF_d3 (depth 3),one_sided,0.8112057124700617,0.52447509765625
+RF (depth full),RF_d3 (depth 3),boundary,-5.02591368550238,6.103515625e-05
+AdaBoost (depth 1),AdaBoost_d3 (depth 3),symmetric,2.928782374879144,0.00018310546875
+AdaBoost (depth 1),AdaBoost_d3 (depth 3),one_sided,-0.2150384377806555,0.359130859375
+AdaBoost (depth 1),AdaBoost_d3 (depth 3),boundary,2.941098231499033,6.103515625e-05
+GB (depth 3),GB_d8 (depth 8),symmetric,2.087672198694044,0.02557373046875
+GB (depth 3),GB_d8 (depth 8),one_sided,-0.10182726954783422,0.5994873046875
+GB (depth 3),GB_d8 (depth 8),boundary,2.1770305212578487,0.02154541015625
+XGB_d3 (depth 3),XGB_d8 (depth 8),symmetric,2.454295251761663,6.103515625e-05
+XGB_d3 (depth 3),XGB_d8 (depth 8),one_sided,0.16043329384151303,0.5614013671875
+XGB_d3 (depth 3),XGB_d8 (depth 8),boundary,2.3879517268318295,6.103515625e-05

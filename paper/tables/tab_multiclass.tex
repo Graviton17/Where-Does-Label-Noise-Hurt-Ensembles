@@ -1,0 +1,14 @@
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+ & \multicolumn{2}{c}{Symmetric} & \multicolumn{2}{c}{Pair-flip} & \multicolumn{2}{c}{Boundary} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Model & $\Delta$err & Var. & $\Delta$err & Var. & $\Delta$err & Var. \\
+\midrule
+Tree & 13.0 & 103\% & 10.9 & 103\% & 8.4 & 70\% \\
+Bagging & 1.8 & 131\% & 3.5 & 99\% & 4.1 & 59\% \\
+RF & 1.9 & 104\% & 3.3 & 94\% & 4.2 & 55\% \\
+AdaBoost & $-$2.2 & -- & 8.0 & 5\% & 1.8 & 56\% \\
+GB & 3.3 & 106\% & 5.2 & 83\% & 4.1 & 52\% \\
+XGB & 2.2 & 114\% & 4.3 & 75\% & 3.7 & 51\% \\
+\bottomrule
+\end{tabular}
